@@ -110,37 +110,30 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
   }
 
   async function handleSubmit(e) {
-    const form = e.currentTarget;
-    if (form.checkValidity() === false) {
-      e.preventDefault();
-      e.stopPropagation();
+    // Verificar distancias entre coordenadas
+    var isDivergence = false;
+    communications.forEach((communication, i) => {
+      var distance = getDistance(communication.lng, communication.lat, comm.lng, comm.lat)
+
+      if (distance < 10.0 && communication.date === comm.date && communication.event !== eventOptions[Number(comm.event - 1)].label) {
+        isDivergence = true
+        setWarning(isDivergence)
+      }
+    })
+
+    if (!isDivergence) {
+      const dataWithCpf = ({...comm, 'cpf': cpf})
+
+      if (commId) {
+        await api.put(`/loss_communication/${commId}`, dataWithCpf)
+      }
+      else {
+        await api.post('/loss_communication', dataWithCpf)
+      }
+      onClose();
+      setWarning(isDivergence)
     }
-    setValidated(true);
-
-    // // Verificar distancias entre coordenadas
-    // var isDivergence = false;
-    // communications.forEach((communication, i) => {
-    //   var distance = getDistance(communication.lng, communication.lat, comm.lng, comm.lat)
-
-    //   if (distance < 10.0 && communication.date === comm.date && communication.event !== eventOptions[Number(comm.event - 1)].label) {
-    //     isDivergence = true
-    //     setWarning(isDivergence)
-    //   }
-    // })
-
-    // if (!isDivergence) {
-    //   const dataWithCpf = ({...comm, 'cpf': cpf})
-
-    //   if (commId) {
-    //     await api.put(`/loss_communication/${commId}`, dataWithCpf)
-    //   }
-    //   else {
-    //     await api.post('/loss_communication', dataWithCpf)
-    //   }
-    //   onClose();
-    //   setWarning(isDivergence)
-    // }
-    // loadData()
+    loadData()
   }
 
   function handleModalClose() {
@@ -151,7 +144,7 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
   }
 
   return (
-    <Modal show={show} onHide={onClose} size="lg" onExit={handleModalClose} noValidate validated={validated}>
+    <Modal show={show} onHide={onClose} size="lg" onExit={handleModalClose}>
         <Modal.Header closeButton>
           <Modal.Title>Comunicação de Perda</Modal.Title>
         </Modal.Header>
@@ -202,9 +195,6 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
                     placeholder="name@example.com"
                   />
                 </Form.Group>
-                <Form.Control.Feedback type="invalid">
-                  Email inválido.
-                </Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
