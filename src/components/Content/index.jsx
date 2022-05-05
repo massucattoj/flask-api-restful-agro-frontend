@@ -12,8 +12,9 @@ import './styles.css';
 export function Content(){
   const [communications, setCommunications ] = useState()
   const [commId, setCommId] = useState(null)
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false)
   const [value, setValue] = useState('')
+  const [isNew, setIsNew] = useState(false)
 
   const handleClose = () => setShow(false);
 
@@ -32,11 +33,13 @@ export function Content(){
   function handeCreateLossCommunication(){
     setCommId(null)
     setShow(true)
+    setIsNew(true)
   }
 
   function handleEditLossCommunication(id){
     setCommId(id)
     setShow(true)
+    setIsNew(false)
   }
 
   async function handleDeleteCommunicationLoss(id) {
@@ -58,7 +61,7 @@ export function Content(){
         <Button variant="primary" onClick={() => handeCreateLossCommunication()}>Nova comunicação</Button>
       </div>
 
-      <Table>
+      <Table striped>
         <thead>
           <tr>
             <th>Name</th>
@@ -104,6 +107,8 @@ export function Content(){
         communications={communications}
         commId={commId}
         loadData={loadData}
+        isNew={isNew}
+        setIsNew={setIsNew}
       />
 
     </div>

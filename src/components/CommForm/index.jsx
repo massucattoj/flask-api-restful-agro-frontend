@@ -8,12 +8,16 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Button, Modal, Form, Row, Col, Alert} from 'react-bootstrap';
 import { MaskedInput } from '../../utils/MaskedInput';
 
-export function CommForm({ communications, commId, onClose, show, loadData }){
+export function CommForm({ communications, commId, onClose, show, loadData, isNew, setIsNew }){
   const [cpf, setCpf] = useState('')
   const [warning, setWarning] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const [comm, setComm] = useState({})
+
+  const [validated, setValidated] = useState(false);
+
+  console.log(loading, isNew)
 
   useEffect(() => {
     if (communications && commId !== null) {
@@ -46,7 +50,7 @@ export function CommForm({ communications, commId, onClose, show, loadData }){
       setComm(item)
     }
     setLoading(true)
-  }, [commId]);
+  }, [commId, communications]);
 
   const eventOptions = [
     {
@@ -106,40 +110,48 @@ export function CommForm({ communications, commId, onClose, show, loadData }){
   }
 
   async function handleSubmit(e) {
-    // Verificar distancias entre coordenadas
-    var isDivergence = false;
-    communications.forEach((communication, i) => {
-      var distance = getDistance(communication.lng, communication.lat, comm.lng, comm.lat)
-
-      if (distance < 10.0 && communication.date === comm.date && communication.event !== eventOptions[Number(comm.event - 1)].label) {
-        isDivergence = true
-        setWarning(isDivergence)
-      }
-    })
-
-    if (!isDivergence) {
-      const dataWithCpf = ({...comm, 'cpf': cpf})
-
-      if (commId) {
-        await api.put(`/loss_communication/${commId}`, dataWithCpf)
-      }
-      else {
-        await api.post('/loss_communication', dataWithCpf)
-      }
-      onClose();
-      setWarning(isDivergence)
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-    loadData()
+    setValidated(true);
+
+    // // Verificar distancias entre coordenadas
+    // var isDivergence = false;
+    // communications.forEach((communication, i) => {
+    //   var distance = getDistance(communication.lng, communication.lat, comm.lng, comm.lat)
+
+    //   if (distance < 10.0 && communication.date === comm.date && communication.event !== eventOptions[Number(comm.event - 1)].label) {
+    //     isDivergence = true
+    //     setWarning(isDivergence)
+    //   }
+    // })
+
+    // if (!isDivergence) {
+    //   const dataWithCpf = ({...comm, 'cpf': cpf})
+
+    //   if (commId) {
+    //     await api.put(`/loss_communication/${commId}`, dataWithCpf)
+    //   }
+    //   else {
+    //     await api.post('/loss_communication', dataWithCpf)
+    //   }
+    //   onClose();
+    //   setWarning(isDivergence)
+    // }
+    // loadData()
   }
 
   function handleModalClose() {
     setComm({})
     setLoading(false)
     setCpf('')
+    setIsNew(false)
   }
 
   return (
-    <Modal show={show} onHide={onClose} size="lg" onExit={handleModalClose}>
+    <Modal show={show} onHide={onClose} size="lg" onExit={handleModalClose} noValidate validated={validated}>
         <Modal.Header closeButton>
           <Modal.Title>Comunicação de Perda</Modal.Title>
         </Modal.Header>
@@ -190,6 +202,9 @@ export function CommForm({ communications, commId, onClose, show, loadData }){
                     placeholder="name@example.com"
                   />
                 </Form.Group>
+                <Form.Control.Feedback type="invalid">
+                  Email inválido.
+                </Form.Control.Feedback>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
@@ -279,7 +294,7 @@ export function CommForm({ communications, commId, onClose, show, loadData }){
             Cuidado - Eventos divergentes!
             </Alert>}
 
-            {loading && <Row>
+            {(loading) && <Row>
             <div style={{width: '100%', height: 400}}>
               <InteractiveMap
                 initialViewState={{
