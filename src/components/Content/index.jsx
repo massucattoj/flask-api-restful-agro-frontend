@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import api from '../../services/api';
-import { format } from 'date-fns';
 import moment from 'moment';
 import { FaTrashAlt, FaCog } from "react-icons/fa";
 
@@ -47,7 +46,9 @@ export function Content(){
     if (window.confirm('Tem certeza que deseja remover essa comunicação de perda?')) {
       await api.delete(`/loss_communication/${id}`)
       const newLossCummunicationsData = communications.filter(comm => comm.id !== id)
+
       setCommunications(newLossCummunicationsData)
+      loadData()
     }
   }
 
@@ -86,7 +87,7 @@ export function Content(){
                 <td>{comm.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}</td>
                 <td style={{ textTransform: 'capitalize'}}>{comm.type_farming}</td>
                 <td>{comm.event}</td>
-                <td>{moment(comm.date, 'yyyy-mm-dd').format('DD/mm/yyyy')}</td>
+                <td>{moment(comm.date,'YYYY-MM-DD').format('MM/DD/YYYY')}</td>
                 <td>
                   <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
                   <Button variant="success" onClick={() => handleEditLossCommunication(comm.id)}>

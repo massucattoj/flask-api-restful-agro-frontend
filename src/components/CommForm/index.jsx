@@ -16,7 +16,6 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
   const [comm, setComm] = useState({})
 
   useEffect(() => {
-    console.log('commId, isNew, loading', commId, isNew, loading)
     if (communications && commId !== null) {
       const lossComm = communications.filter(comm => comm.id === commId)[0];
       const item = {
@@ -119,19 +118,26 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
     })
 
     if (!isDivergence) {
-      const dataWithCpf = ({...comm, 'cpf': cpf})
+      const dataWithCpf = ({...comm, 'cpf': cpf.replace('.', '').replace('.', '').replace('-', '')})
 
       if (commId) {
         const response = await api.put(`/loss_communication/${commId}`, dataWithCpf)
+        if (response.status === 201) {
+          window.alert('Registro alterado com sucesso!')
+        }
       }
       else {
         const response = await api.post('/loss_communication', dataWithCpf)
-        console.log(response)
+        if (response.status === 201) {
+          window.alert('Registro criado com sucesso!')
+        }
       }
+
+      // Sucesso
       onClose();
       setWarning(isDivergence)
+      loadData()
     }
-    loadData()
   }
 
   function handleModalClose() {
@@ -148,6 +154,7 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
     setLoading(false)
     setCpf('')
     setIsNew(false)
+    setWarning(false)
   }
 
   return (
@@ -288,15 +295,15 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
             </Row>
 
             {warning && <Alert key='warning' variant='warning'>
-            Cuidado - Eventos divergentes!
+              Cuidado - Eventos divergentes!
             </Alert>}
 
             {loading && <Row>
             <div style={{width: '100%', height: 400}}>
               <InteractiveMap
                 initialViewState={{
-                  longitude: comm.lng ? comm.lng : -52.6794792,
-                  latitude: comm.lat ? comm.lat :  -26.2437336,
+                  longitude: !isNew ? comm.lng : -52.6794792,
+                  latitude: !isNew ? comm.lat :  -26.2437336,
                   zoom: 12
                 }}
                 style={{width: '100%', height: 400}}
