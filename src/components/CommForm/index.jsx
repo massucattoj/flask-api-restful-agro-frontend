@@ -16,6 +16,7 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
   const [comm, setComm] = useState({})
 
   useEffect(() => {
+    console.log('commId, isNew, loading', commId, isNew, loading)
     if (communications && commId !== null) {
       const lossComm = communications.filter(comm => comm.id === commId)[0];
       const item = {
@@ -46,7 +47,7 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
       setComm(item)
     }
     setLoading(true)
-  }, [commId, communications]);
+  }, [commId, communications, isNew]);
 
   const eventOptions = [
     {
@@ -121,10 +122,11 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
       const dataWithCpf = ({...comm, 'cpf': cpf})
 
       if (commId) {
-        await api.put(`/loss_communication/${commId}`, dataWithCpf)
+        const response = await api.put(`/loss_communication/${commId}`, dataWithCpf)
       }
       else {
-        await api.post('/loss_communication', dataWithCpf)
+        const response = await api.post('/loss_communication', dataWithCpf)
+        console.log(response)
       }
       onClose();
       setWarning(isDivergence)
@@ -133,7 +135,16 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
   }
 
   function handleModalClose() {
-    setComm({})
+    setComm({
+      name: '',
+      email: '',
+      cpf: '',
+      type_farming: '',
+      event: '',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      lat: '',
+      lng: '',
+    })
     setLoading(false)
     setCpf('')
     setIsNew(false)
@@ -280,7 +291,7 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
             Cuidado - Eventos divergentes!
             </Alert>}
 
-            {(loading) && <Row>
+            {loading && <Row>
             <div style={{width: '100%', height: 400}}>
               <InteractiveMap
                 initialViewState={{

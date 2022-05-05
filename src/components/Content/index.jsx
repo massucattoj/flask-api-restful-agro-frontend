@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import api from '../../services/api';
-
+import { format } from 'date-fns';
+import moment from 'moment';
 import { FaTrashAlt, FaCog } from "react-icons/fa";
 
 import { CommForm } from '../CommForm';
@@ -32,14 +33,14 @@ export function Content(){
 
   function handeCreateLossCommunication(){
     setCommId(null)
-    setShow(true)
     setIsNew(true)
+    setShow(true)
   }
 
   function handleEditLossCommunication(id){
     setCommId(id)
-    setShow(true)
     setIsNew(false)
+    setShow(true)
   }
 
   async function handleDeleteCommunicationLoss(id) {
@@ -82,10 +83,10 @@ export function Content(){
             }).map(comm => (
               <tr key={comm.id}>
                 <td>{comm.name}</td>
-                <td>{comm.cpf}</td>
+                <td>{comm.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}</td>
                 <td style={{ textTransform: 'capitalize'}}>{comm.type_farming}</td>
                 <td>{comm.event}</td>
-                <td>{comm.date}</td>
+                <td>{moment(comm.date, 'yyyy-mm-dd').format('DD/mm/yyyy')}</td>
                 <td>
                   <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
                   <Button variant="success" onClick={() => handleEditLossCommunication(comm.id)}>
