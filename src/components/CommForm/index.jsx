@@ -15,6 +15,8 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
 
   const [comm, setComm] = useState({})
 
+  const [validated, setValidated] = useState(false);
+
   useEffect(() => {
     if (communications && commId !== null) {
       const lossComm = communications.filter(comm => comm.id === commId)[0];
@@ -44,6 +46,7 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
       }
       setCpf('')
       setComm(item)
+      setValidated(false)
     }
     setLoading(true)
   }, [commId, communications, isNew]);
@@ -106,6 +109,13 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
   }
 
   async function handleSubmit(e) {
+    const form = e.currentTarget;
+    if (form.checkValidity() === false) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setValidated(true);
+
     // Verificar distancias entre coordenadas
     var isDivergence = false;
     communications.forEach((communication, i) => {
@@ -124,12 +134,14 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
         const response = await api.put(`/loss_communication/${commId}`, dataWithCpf)
         if (response.status === 201) {
           window.alert('Registro alterado com sucesso!')
+          setValidated(false);
         }
       }
       else {
         const response = await api.post('/loss_communication', dataWithCpf)
         if (response.status === 201) {
           window.alert('Registro criado com sucesso!')
+          setValidated(false);
         }
       }
 
@@ -164,7 +176,7 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
         </Modal.Header>
         <Modal.Body>
 
-          <Form>
+          <Form noValidate validated={validated}>
             <Row>
               <Col xs={12} md={6}>
               <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
