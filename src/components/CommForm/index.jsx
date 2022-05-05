@@ -15,10 +15,6 @@ export function CommForm({ communications, commId, onClose, show, loadData, isNe
 
   const [comm, setComm] = useState({})
 
-  const [validated, setValidated] = useState(false);
-
-  console.log(loading, isNew)
-
   useEffect(() => {
     if (communications && commId !== null) {
       const lossComm = communications.filter(comm => comm.id === commId)[0];
